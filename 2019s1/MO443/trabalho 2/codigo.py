@@ -112,6 +112,34 @@ def diresq(imagem, altura, largura):
 	
 	return imagem
 
+def funcao(imagem, altura, largura):
+	imagem = np.interp(imagem, (0, 255), (0, 9))
+	imagem = np.floor(imagem)
+	auximagem = np.zeros((altura * 3, largura * 3))
+	auximagem = auximagem + 255
+	for i in range(altura-1):
+		for j in range(largura-1):
+			if imagem[i][j] > 0:
+				auximagem[(3*i)+2][(3*j)+2] = 0
+			if imagem[i][j] > 1:
+				auximagem[(3*i)+2][(3*j)+1] = 0
+			if imagem[i][j] > 2:
+				auximagem[(3*i)+3][(3*j)+2] = 0
+			if imagem[i][j] > 3:
+				auximagem[(3*i)+2][(3*j)+3] = 0
+			if imagem[i][j] > 4:
+				auximagem[(3*i)+1][(3*j)+3] = 0
+			if imagem[i][j] > 5:
+				auximagem[(3*i)+3][(3*j)+1] = 0
+			if imagem[i][j] > 6:
+				auximagem[(3*i)+1][(3*j)+1] = 0
+			if imagem[i][j] > 7:
+				auximagem[(3*i)+3][(3*j)+3] = 0
+			if imagem[i][j] > 8: 
+				auximagem[(3*i)+1][(3*j)+2] = 0
+
+	return auximagem
+
 #diretorio da imagem
 dirimagem = sys.argv[1]
 
@@ -147,4 +175,10 @@ if metodo == 'fs':
 	else:
 		print('Opcao invalida.\n')
 
-print(imagem / 25.5)
+elif metodo == '10':
+	imagem = funcao(imagem, altura, largura)
+
+else:
+	print('Nao foi possivel realizar as operacoes.')
+
+cv2.imwrite('saida/' + saida, imagem)
