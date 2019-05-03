@@ -31,12 +31,13 @@ int findset_pathcompression(int u){
 }
 
 void link(int u, int v){
-    if(size[u] > size[v])
+    if(size[u] >= size[v]){
         p[v] = u;
+        size[u] += size[v];
+    }
     else{
         p[u] = v;
-        if (size[u] == size[v])
-            size[v]++;
+        size[v] += size[u];
     }
 }
 
@@ -54,10 +55,10 @@ int main(){
     vector <Aresta> grafo;
     vector <Aresta> A;
 
-    int qt_vertices,qt_arestas,mst=0;
+    int qt_vertices, qt_arestas, mst = 0;
 
     //leitura da quantidade de vertices e quantidade de arestas
-    fscanf(file,"%d %d",&qt_vertices,&qt_arestas);
+    fscanf(file,"%d %d",&qt_vertices, &qt_arestas);
     
     //makeset dos vertices
     for(int i=1;i<=qt_vertices;i++){
@@ -66,7 +67,7 @@ int main(){
     
     //criacao do grafo
     for(int i=0;i<qt_arestas;i++){
-        fscanf(file,"%d %d %d",&a,&b,&peso);
+        fscanf(file,"%d %d %d",&a, &b, &peso);
         Aresta aux={a,b,peso};
         grafo.push_back(aux);
         aux={b,a,peso};
