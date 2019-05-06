@@ -73,7 +73,7 @@ void inicializacao(HEAP * h, int vertices){
         h->valor[h->tamanho] = inf;
         h->parent[h->tamanho] = -1;
     }
-    h->valor[0] = 0;
+    h->valor[1] = 0;
 }
 
 int parent(int u){
@@ -150,13 +150,7 @@ int main(){
         int u = extract_min(&h);
         if(u != -inf){
             //nao ta funcionando ainda ate o fim do if(u != inf)
-            /*
-            for(int i=0;i<grafo[u].size();i++){
-                int v = grafo[u][i].first;
-                cout<<v<<endl;
-            }
-            cout<<endl;
-            */
+            cout<<u<<endl;
         }
     }
 

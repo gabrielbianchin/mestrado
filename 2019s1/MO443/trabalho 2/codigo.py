@@ -112,75 +112,75 @@ def diresq(imagem, altura, largura):
 	
 	return imagem
 
-def funcao(imagem, altura, largura):
+def funcao_3x3(imagem, altura, largura):
 	imagem = np.interp(imagem, (0, 255), (0, 9))
 	imagem = np.floor(imagem)
 	auximagem = np.zeros((altura * 3, largura * 3))
-	auximagem = auximagem + 255
+	auximagem = auximagem + 1
 	for i in range(altura-1):
 		for j in range(largura-1):
-			if imagem[i][j] > 0:
-				auximagem[(3*i)+2][(3*j)+2] = 0
-			if imagem[i][j] > 1:
-				auximagem[(3*i)+2][(3*j)+1] = 0
-			if imagem[i][j] > 2:
-				auximagem[(3*i)+3][(3*j)+2] = 0
-			if imagem[i][j] > 3:
-				auximagem[(3*i)+2][(3*j)+3] = 0
-			if imagem[i][j] > 4:
-				auximagem[(3*i)+1][(3*j)+3] = 0
-			if imagem[i][j] > 5:
-				auximagem[(3*i)+3][(3*j)+1] = 0
-			if imagem[i][j] > 6:
+			#verifica se a imagem eh menor do que o valor da mascara. Se for, o ponto em questao vira preto
+			if imagem[i][j] < 1:
 				auximagem[(3*i)+1][(3*j)+1] = 0
-			if imagem[i][j] > 7:
-				auximagem[(3*i)+3][(3*j)+3] = 0
-			if imagem[i][j] > 8: 
+			if imagem[i][j] < 2:
+				auximagem[(3*i)+1][(3*j)] = 0
+			if imagem[i][j] < 3:
+				auximagem[(3*i)+2][(3*j)+1] = 0
+			if imagem[i][j] < 4:
 				auximagem[(3*i)+1][(3*j)+2] = 0
-
+			if imagem[i][j] < 5:
+				auximagem[(3*i)][(3*j)+2] = 0
+			if imagem[i][j] < 6:
+				auximagem[(3*i)+2][(3*j)] = 0
+			if imagem[i][j] < 7:
+				auximagem[(3*i)][(3*j)] = 0
+			if imagem[i][j] < 8:
+				auximagem[(3*i)+2][(3*j)+2] = 0
+			if imagem[i][j] < 9: 
+				auximagem[(3*i)][(3*j)+1] = 0
+	
 	return auximagem
 
 def bayer(imagem, altura, largura):
 	imagem = np.interp(imagem, (0, 255), (0, 16))
 	imagem = np.floor(imagem)
 	auximagem = np.zeros((altura * 4, largura * 4))
-	auximagem = auximagem + 255
+	auximagem = auximagem + 1
 	for i in range(altura-1):
 		for j in range(largura-1):
-			if imagem[i][j] > 0:
-				auximagem[(4*i)+1][(4*j)+1] = 0
-			if imagem[i][j] > 1:
-				auximagem[(4*i)+3][(4*j)+3] = 0
-			if imagem[i][j] > 2:
-				auximagem[(4*i)+1][(4*j)+3] = 0
-			if imagem[i][j] > 3:
-				auximagem[(4*i)+3][(4*j)+1] = 0
-			if imagem[i][j] > 4:
+			#verifica se a imagem eh menor do que o valor da mascara. Se for, o ponto em questao vira preto
+			if imagem[i][j] < 1:
+				auximagem[(4*i)][(4*j)] = 0
+			if imagem[i][j] < 2:
 				auximagem[(4*i)+2][(4*j)+2] = 0
-			if imagem[i][j] > 5:
-				auximagem[(4*i)+4][(4*j)+4] = 0
-			if imagem[i][j] > 6:
-				auximagem[(4*i)+2][(4*j)+4] = 0
-			if imagem[i][j] > 7:
-				auximagem[(4*i)+3][(4*j)+3] = 0
-			if imagem[i][j] > 8: 
-				auximagem[(4*i)+1][(4*j)+2] = 0
-			if imagem[i][j] > 9:
-				auximagem[(4*i)+2][(4*j)+1] = 0
-			if imagem[i][j] > 10:
-				auximagem[(4*i)+3][(4*j)+2] = 0
-			if imagem[i][j] > 11:
-				auximagem[(4*i)+2][(4*j)+3] = 0
-			if imagem[i][j] > 12:
-				auximagem[(4*i)+1][(4*j)+3] = 0
-			if imagem[i][j] > 13:
-				auximagem[(4*i)+3][(4*j)+1] = 0
-			if imagem[i][j] > 14:
+			if imagem[i][j] < 3:
+				auximagem[(4*i)+2][(4*j)] = 0
+			if imagem[i][j] < 4:
+				auximagem[(4*i)][(4*j)+2] = 0
+			if imagem[i][j] < 5:
 				auximagem[(4*i)+1][(4*j)+1] = 0
-			if imagem[i][j] > 15:
+			if imagem[i][j] < 6:
 				auximagem[(4*i)+3][(4*j)+3] = 0
-			if imagem[i][j] > 16: 
+			if imagem[i][j] < 7:
+				auximagem[(4*i)+3][(4*j)+1] = 0
+			if imagem[i][j] < 8:
+				auximagem[(4*i)+1][(4*j)+3] = 0
+			if imagem[i][j] < 9: 
+				auximagem[(4*i)][(4*j)+1] = 0
+			if imagem[i][j] < 10:
+				auximagem[(4*i)+3][(4*j)+2] = 0
+			if imagem[i][j] < 11:
+				auximagem[(4*i)+3][(4*j)] = 0
+			if imagem[i][j] < 12:
 				auximagem[(4*i)+1][(4*j)+2] = 0
+			if imagem[i][j] < 13:
+				auximagem[(4*i)][(4*j)+1] = 0
+			if imagem[i][j] < 14:
+				auximagem[(4*i)+2][(4*j)+3] = 0
+			if imagem[i][j] < 15:
+				auximagem[(4*i)+2][(4*j)+1] = 0
+			if imagem[i][j] < 16:
+				auximagem[(4*i)][(4*j)+3] = 0
 
 	return auximagem
 
@@ -219,8 +219,8 @@ if metodo == 'fs':
 	else:
 		print('Opcao invalida.\n')
 
-elif metodo == 	'10':
-	imagem = funcao(imagem, altura, largura)
+elif metodo == 	'3x3':
+	imagem = funcao_3x3(imagem, altura, largura)
 
 elif metodo == 'bayer':
 	imagem = bayer(imagem, altura, largura)
