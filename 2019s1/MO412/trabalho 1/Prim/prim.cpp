@@ -7,73 +7,31 @@ priority_queue<pair<int,int> > pq;
 vector <vector<pair<int,int> > > grafo;
 
 
+struct NO {
+    int valor;
+    int parent;
+    int key;
+};
+
 typedef struct {
-    int * valor;
-    int * parent;
-    int tamanho = 0;
+    NO * nos;
+    int tamanho = -1;
 }HEAP;
 
-
-
-/*
-
-
-
-void decrease_key()
-
-
-
-void process(int u){
-    vis[u]=1;
-    for(int i=0;i< grafo[u].size();i++){
-        int v = grafo[u][i].first,peso = grafo [u][i].second;
-        if(vis[v]==0)
-            pq.push(make_pair(-peso,v));
-    }
-}
-
-int main(){
-    FILE *file;
-    int qt_arestas,qt_vertices,a,b,c,mst=0;
-    file = fopen("teste.txt", "r");
-    fscanf(file,"%d %d",&qt_vertices,&qt_arestas);
-    vis.assign(qt_vertices+1,0);
-    grafo.assign(qt_vertices+1,vector<pair<int,int> >());
-    for(int i=0;i<qt_arestas;i++){
-        fscanf(file,"%d %d %d",&a,&b,&c);
-        grafo[a].push_back(make_pair(b,c));
-        grafo[b].push_back(make_pair(a,c));
-    }
-    for(int i=1;i<=qt_vertices;i++){
-        if(vis[i]==0){
-            process(i);
-            while(!pq.empty()){
-                pair<int,int> aux = pq.top();
-                pq.pop();
-                int v = aux.second,peso = -aux.first;
-                if(vis[v]==0){
-                    mst+=peso;
-                    process(v);
-                }
-            }
-        }
-    }
-    cout<<"valor da mst = "<<mst<<endl;
-    fclose(file);
-    return 0;
-}
-
-*/
-
 void inicializacao(HEAP * h, int vertices){
-    h->valor = (int*) malloc(sizeof(int)*(vertices+1));
-    h->parent = (int*) malloc(sizeof(int)*(vertices+1));
-    for(int i=0;i<=vertices;i++){
+    NO aux;
+    h->nos = (NO *) malloc(sizeof(NO)*(vertices+1));
+    for(int i=0;i<vertices;i++){
+        if(i != 0)
+            aux.valor = inf;
+        else
+            aux.valor = 0;
+        aux.parent = NULL;
+        aux.key = i;
         (h->tamanho)++;
-        h->valor[h->tamanho] = inf;
-        h->parent[h->tamanho] = -1;
+        h->nos[h->tamanho] = aux;
+        //cout<<(h->nos)->key<<endl;
     }
-    h->valor[1] = 0;
 }
 
 int parent(int u){
@@ -89,17 +47,18 @@ int right(int u){
 }
 
 void heapify(HEAP * h, int u){
+    u = (h->nos[u]).key;
     int l = left(u);
     int r = right(u);
     int smallest = u;
-    if(l <= h->tamanho && h->valor[l] < h->valor[smallest])
+    if(l <= h->tamanho && (h->nos[l]).valor < (h->nos[smallest]).valor)
         smallest = l;
-    if(r <= h->tamanho && h->valor[r] < h->valor[smallest])
+    if(r <= h->tamanho && (h->nos[r]).valor < (h->nos[smallest]).valor)
         smallest = r;
     if(smallest != u){
-        int aux = h->valor[u];
-        h->valor[u] = h->valor[smallest];
-        h->valor[smallest] = aux;
+        NO aux = h->nos[u];
+        h->nos[u] = h->nos[smallest];
+        h->nos[smallest] = aux;
         heapify(h, smallest);
     }
 }
@@ -111,16 +70,29 @@ void build_heap(HEAP * h){
     }
 }
 
-int extract_min(HEAP * h){
+NO extract_min(HEAP * h){
     int n = h->tamanho;
-    if(n < 1)
-        return -inf;
+    if(n < 1){
+        NO aux = {-1, -1, -1};
+        return aux;
+    }
     else{
-        int min = h->valor[0];
-        h->valor[0] = h->valor[n-1];
+        NO aux = h->nos[0];
+        h->nos[0] = h->nos[n-1];
         (h->tamanho)--;
         heapify(h, 0);
-        return min;
+        return aux;
+    }
+}
+
+void decrease_key(HEAP * h, int v, int peso){
+    (h->nos[v]).valor = peso;
+    int pai = (h->nos[v]).parent;
+    while(v > 0 && (h->nos[v]).valor < (h->nos[pai]).valor){
+        NO aux = h->nos[v];
+        h->nos[v] = h->nos[pai];
+        h->nos[pai] = aux;
+        v = pai;
     }
 }
 
@@ -129,39 +101,49 @@ int main(){
     FILE *file;
     file = fopen("teste.txt", "r");
     
-    int qt_arestas, qt_vertices, a, b, c;
+    int qt_arestas, qt_vertices, a, b, p;
     fscanf(file,"%d %d", &qt_vertices, &qt_arestas);
 
     HEAP h;
+    int c[1000], mst = 0;
+
+    for(int i=0;i<qt_vertices;i++)
+        c[i] = -1;
 
     inicializacao(&h, qt_vertices);
 
     build_heap(&h);
 
-    grafo.assign(qt_vertices+1,vector<pair<int,int> >());
+    grafo.assign(qt_vertices,vector<pair<int,int> >());
 
     for(int i=0;i<qt_arestas;i++){
-        fscanf(file,"%d %d %d",&a,&b,&c);
-        grafo[a].push_back(make_pair(b,c));
-        grafo[b].push_back(make_pair(a,c));
+        fscanf(file,"%d %d %d",&a,&b,&p);
+        grafo[a].push_back(make_pair(b,p));
+        grafo[b].push_back(make_pair(a,p));
     }
 
     while(h.tamanho > 0){
-        int u = extract_min(&h);
-        if(u != -inf){
-            //nao ta funcionando ainda ate o fim do if(u != inf)
-            cout<<u<<endl;
+        NO w = extract_min(&h);
+        if(w.valor != -1){
+            int v = w.key;
+            for(int i=0;i<grafo[v].size();i++){
+                int u = grafo[v][i].first, peso = grafo[v][i].second;
+
+                if(c[u] != -1 && peso < (h.nos[u]).valor){
+                    (h.nos[u]).parent = v;
+                    decrease_key(&h, u, peso);
+                }
+            }
+            c[v] = 0;
+            int pai = w.parent;
+            
+            cout<<pai<<" "<<grafo[pai][v].first<<" "<<grafo[pai][v].second<<endl;
+            mst += grafo[pai][v].second;
         }
     }
 
-    //funcionando
-    /*
-    for(int i=0;i<=qt_vertices;i++){
-        cout<<"i: "<<i<<endl;
-        for(int u=0;u<grafo[i].size();u++){
-            cout<<grafo[i][u].first<<" "<<grafo[i][u].second<<endl;
-        }
-    }
-    */
+    cout<<mst<<endl;
+
+    
     return 0;
 }
