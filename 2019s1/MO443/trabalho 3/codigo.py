@@ -3,12 +3,12 @@ import numpy as np
 import sys
 
 
-def funcao(img):
+def operadores_morfologicos(img):
 
 	#definicao dos kernels
-	kernel1 = np.zeros((1, 100), np.uint8)
-	kernel2 = np.zeros((200, 1), np.uint8)
-	kernel3 = np.zeros((1, 30), np.uint8)
+	kernel1 = np.ones((1, 100), np.uint8)
+	kernel2 = np.ones((200, 1), np.uint8)
+	kernel3 = np.ones((1, 30), np.uint8)
 
 	#transformar a imagem em fundo preto e texto em branco
 	img = cv2.bitwise_not(img)
@@ -27,6 +27,32 @@ def funcao(img):
 
 	return img
 
+def componentes_conexos(img, img_original):
+	nlabels, labels, stats, centroids = cv2.connectedComponentsWithStats(img)
+
+	cont = 0
+
+	imgfinal = np.array([[]])
+
+	for components in stats:
+		x = components[0]
+		y = components[1]
+		a = components[2]
+		b = components[3]
+
+		pretos = 0
+		tam = ((x + a) - x) * ((y + b) - y) 
+
+		imgfinal = cv2.rectangle(img_original, (x, y), (x + a, y + b), 1, 5)
+
+		cont += 1
+
+	cv2.imwrite('cc.png', imgfinal)
+
+	print('Foram encontrados ' + str(cont) + ' componentes conexos')
+
+	return imgfinal
+
 #diretorio da imagem
 dir_imagem = sys.argv[1]
 
@@ -36,15 +62,10 @@ saida = sys.argv[2]
 #leitura da imagem em tons de cinza
 img = cv2.imread('imagens/bitmap.pbm', 0)
 
-imgsaida = funcao(img)
+#aplicacao dos passos (1) - (6)
+imgsaida = operadores_morfologicos(img)
 
-nlabels, labels, stats, centroids = cv2.connectedComponentsWithStats(imgsaida)
-
-for components in stats:
-	x = components[0]
-	y = components[1]
-	a = components[2]
-	b = components[3]
-	imgsaida = cv2.rectangle(imgsaida, (x, y), (x + a, y + b), 1, 5)
-
-cv2.imwrite('saida/' + saida, imgsaida)
+#aplicacao dos passos (7) - (9)
+imgfinal = componentes_conexos(imgsaida, img)
+	
+cv2.imwrite('saida/' + saida, imgfinal)
