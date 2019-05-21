@@ -35,13 +35,10 @@ def encontra_texto(img, img_original):
 	cont = -1
 
 	#contador de linhas
-	linhas = 0
+	linhas_cont = 0
 
 	#retorna o que eh texto
-	texto = np.array([[]])
-
-	#lista utilizada para detectar palavras em cada linha
-	posicoes = []
+	linhas = np.array([[]])
 
 	for components in stats:
 
@@ -70,54 +67,82 @@ def encontra_texto(img, img_original):
 							transicoes += 1
 
 			if (pretos/tam) < 0.4 and pretos > 0 and (transicoes/pretos) > 0.4:
-				texto = cv2.rectangle(img_original, (x, y), (x + a, y + b), 1, 5)
-				linhas += 1
-				posicoes.append([y, y+b, x, x+a])
+				linhas = cv2.rectangle(img_original, (x, y), (x + a, y + b), 1, 5)
+				linhas_cont += 1
 
 		cont += 1
 
-	posicoes = np.array(posicoes)
+	print('Foram encontradas ' + str(linhas_cont) + ' linhas\n')
 
-	print('\nForam encontrados ' + str(cont) + ' componentes conexos')
-	print('Foram encontradas ' + str(linhas) + ' linhas de palavras')
+	return linhas
 
-	return texto, posicoes
-
-def encontra_palavras(posicoes, img):
+def encontra_palavras(img):
 
 	#kernel para encontrar palavras
-	kernel1 = np.ones((1, 100), np.uint8)
-	kernel2 = np.ones((50, 1), np.uint8)
+	kernel1 = np.ones((1, 10), np.uint8)
+	kernel2 = np.ones((100, 1), np.uint8)
 
-	for i in range(len(posicoes)):
-		x1, x2, y1, y2 = posicoes[i]
+	#transformar a imagem em fundo preto e texto em branco
+	imgaux = cv2.bitwise_not(img)
 
-		imgaux = cv2.bitwise_not(img[x1:x2,y1:y2])
+	#faz o fechamento da imagem
+	img1 = cv2.morphologyEx(imgaux, cv2.MORPH_CLOSE, kernel1)
 
-		img1 = cv2.morphologyEx(imgaux, cv2.MORPH_CLOSE, kernel1)
+	#faz o fechamento da imagem
+	img2 = cv2.morphologyEx(imgaux, cv2.MORPH_CLOSE, kernel2)
 
-		img2 = cv2.morphologyEx(imgaux, cv2.MORPH_CLOSE, kernel2)
+	#operacao AND entre img1 e img2
+	img1 = cv2.bitwise_and(img1, img2)
 
-		img1 = cv2.bitwise_and(img1, img2)
+	#fechamento da imagem
+	img1 = cv2.morphologyEx(img1, cv2.MORPH_CLOSE, kernel1)
 
-		nlabels, labels, stats, centroids = cv2.connectedComponentsWithStats(img1)
+	#encontra os componentes conexos
+	nlabels, labels, stats, centroids = cv2.connectedComponentsWithStats(img1)
 
-		#contador de palavras
-		cont = 0
+	imgsaida = np.array([])
 
-		imgsaida = np.array([])
+	#contador de componentes conexos, comeca com -1 porque o componente 0 eh a imagem inteira
+	cont = -1
 
-		for components in stats:
+	#contador de palavras
+	palavras = 0
+
+	for components in stats:
 			
-			x = components[0]
-			y = components[1]
-			a = components[2]
-			b = components[3]
+		x = components[0]
+		y = components[1]
+		a = components[2]
+		b = components[3]
 
-			imgsaida = cv2.rectangle(img[x1:x2,y1:y2], (x, y), (x+a, y+b), 1, 5)
+		if cont != -1:
 
-		cv2.imshow('imagem', imgsaida)
-		cv2.waitKey(0)
+			#contador de pixels pretos
+			pretos = 0
+
+			#contador de transicoes de preto para branco
+			transicoes = 0
+
+			#tamanho do componente
+			tam = ((x + a) - x) * ((y + b) - y)
+
+			for i in range(y, y+b):
+				for j in range(x, x+a):
+					if img[i,j] == 0:
+						pretos += 1
+						if img[i-1,j] != 0 or img[i+1,j] != 0 or img[i,j-1] != 0 or img[i,j+1] != 0: 
+							transicoes += 1
+
+			if pretos > 0 and (pretos/tam) > 0.15 and (transicoes/(pretos+1)) < 0.6 and (pretos/tam) < 0.6:
+				imgsaida = cv2.rectangle(img, (x, y), (x+a, y+b), 1, 5)
+				palavras += 1
+
+		cont += 1
+
+	print('Foram encontradas ' + str(palavras) + ' palavras\n')
+
+	return imgsaida
+
 
 
 def transforma_pbm(img):
@@ -134,16 +159,23 @@ dir_imagem = sys.argv[1]
 saida = sys.argv[2]
 
 #leitura da imagem em tons de cinza
-img = cv2.imread('imagens/bitmap.pbm', 0)
+img = cv2.imread(dir_imagem, 0)
 
 #aplicacao dos passos (1) - (6)
 imgsaida = operadores_morfologicos(img)
 
 #aplicacao dos passos (7) - (9)
-texto, posicoes = encontra_texto(imgsaida, img)
+linhas = encontra_texto(imgsaida, img)
 
-palavras = encontra_palavras(posicoes, img)
+#tive que fazer novamente a leitura porque por algum motivo a imagem era perdida
+img = cv2.imread(dir_imagem, 0)
 
-texto = transforma_pbm(texto)
+#encontra as palavras da imagem
+palavras = encontra_palavras(img)
 
-cv2.imwrite('saida/' + saida, texto)
+#funcao para transformar no formato pbm
+linhas = transforma_pbm(linhas)
+palavras = transforma_pbm(palavras)
+
+cv2.imwrite('saida/' + saida + '-linhas.pbm', linhas)
+cv2.imwrite('saida/' + saida + '-palavras.pbm', palavras)
