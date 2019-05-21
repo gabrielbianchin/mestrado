@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import sys
 
-
 def operadores_morfologicos(img):
 
 	#definicao dos kernels
@@ -27,31 +26,63 @@ def operadores_morfologicos(img):
 
 	return img
 
-def componentes_conexos(img, img_original):
+def encontra_texto(img, img_original):
+	
+	#encontrar componentes conexos
 	nlabels, labels, stats, centroids = cv2.connectedComponentsWithStats(img)
 
-	cont = 0
+	#contador de componentes conexos, comeca com -1 porque o componente 0 eh a imagem inteira
+	cont = -1
 
-	imgfinal = np.array([[]])
+	#contador de linhas
+	linhas = 0
+
+	#retorna o que eh texto
+	texto = np.array([[]])
 
 	for components in stats:
+
 		x = components[0]
 		y = components[1]
 		a = components[2]
 		b = components[3]
 
-		pretos = 0
-		tam = ((x + a) - x) * ((y + b) - y) 
+		#como a figura inteira eh contada como o primeiro componente, removemos esse componente da imagem
+		if cont != -1:
 
-		imgfinal = cv2.rectangle(img_original, (x, y), (x + a, y + b), 1, 5)
+			#contador de pixels pretos
+			pretos = 0
+
+			#contador de transicoes de preto para branco
+			transicoes = 0
+
+			#tamanho do componente
+			tam = ((x + a) - x) * ((y + b) - y)
+
+			for i in range(y, y+b):
+				for j in range(x, x+a):
+					if img_original[i,j] == 0:
+						pretos += 1
+						if img_original[i-1,j] != 0 or img_original[i+1,j] != 0 or img_original[i,j-1] != 0 or img_original[i,j+1] != 0: 
+							transicoes += 1
+
+			if (pretos/tam) < 0.4 and pretos > 0 and (transicoes/pretos) > 0.4:
+				texto = cv2.rectangle(img_original, (x, y), (x + a, y + b), 1, 5)
+				linhas += 1
 
 		cont += 1
 
-	cv2.imwrite('cc.png', imgfinal)
+	print('\nForam encontrados ' + str(cont) + ' componentes conexos')
+	print('Foram encontradas ' + str(linhas) + ' linhas de palavras')
 
-	print('Foram encontrados ' + str(cont) + ' componentes conexos')
+	return texto
 
-	return imgfinal
+def transforma_pbm(img):
+	
+	img[img < 128] = 0
+	img[img >= 128] = 1 
+
+	return img
 
 #diretorio da imagem
 dir_imagem = sys.argv[1]
@@ -66,6 +97,8 @@ img = cv2.imread('imagens/bitmap.pbm', 0)
 imgsaida = operadores_morfologicos(img)
 
 #aplicacao dos passos (7) - (9)
-imgfinal = componentes_conexos(imgsaida, img)
-	
-cv2.imwrite('saida/' + saida, imgfinal)
+texto = encontra_texto(imgsaida, img)
+
+texto = transforma_pbm(texto)
+
+cv2.imwrite('saida/' + saida, texto)
