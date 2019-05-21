@@ -40,6 +40,9 @@ def encontra_texto(img, img_original):
 	#retorna o que eh texto
 	texto = np.array([[]])
 
+	#lista utilizada para detectar palavras em cada linha
+	posicoes = []
+
 	for components in stats:
 
 		x = components[0]
@@ -69,13 +72,53 @@ def encontra_texto(img, img_original):
 			if (pretos/tam) < 0.4 and pretos > 0 and (transicoes/pretos) > 0.4:
 				texto = cv2.rectangle(img_original, (x, y), (x + a, y + b), 1, 5)
 				linhas += 1
+				posicoes.append([y, y+b, x, x+a])
 
 		cont += 1
+
+	posicoes = np.array(posicoes)
 
 	print('\nForam encontrados ' + str(cont) + ' componentes conexos')
 	print('Foram encontradas ' + str(linhas) + ' linhas de palavras')
 
-	return texto
+	return texto, posicoes
+
+def encontra_palavras(posicoes, img):
+
+	#kernel para encontrar palavras
+	kernel1 = np.ones((1, 100), np.uint8)
+	kernel2 = np.ones((50, 1), np.uint8)
+
+	for i in range(len(posicoes)):
+		x1, x2, y1, y2 = posicoes[i]
+
+		imgaux = cv2.bitwise_not(img[x1:x2,y1:y2])
+
+		img1 = cv2.morphologyEx(imgaux, cv2.MORPH_CLOSE, kernel1)
+
+		img2 = cv2.morphologyEx(imgaux, cv2.MORPH_CLOSE, kernel2)
+
+		img1 = cv2.bitwise_and(img1, img2)
+
+		nlabels, labels, stats, centroids = cv2.connectedComponentsWithStats(img1)
+
+		#contador de palavras
+		cont = 0
+
+		imgsaida = np.array([])
+
+		for components in stats:
+			
+			x = components[0]
+			y = components[1]
+			a = components[2]
+			b = components[3]
+
+			imgsaida = cv2.rectangle(img[x1:x2,y1:y2], (x, y), (x+a, y+b), 1, 5)
+
+		cv2.imshow('imagem', imgsaida)
+		cv2.waitKey(0)
+
 
 def transforma_pbm(img):
 	
@@ -97,7 +140,9 @@ img = cv2.imread('imagens/bitmap.pbm', 0)
 imgsaida = operadores_morfologicos(img)
 
 #aplicacao dos passos (7) - (9)
-texto = encontra_texto(imgsaida, img)
+texto, posicoes = encontra_texto(imgsaida, img)
+
+palavras = encontra_palavras(posicoes, img)
 
 texto = transforma_pbm(texto)
 
