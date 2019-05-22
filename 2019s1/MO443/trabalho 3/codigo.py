@@ -72,7 +72,7 @@ def encontra_texto(img, img_original):
 
 		cont += 1
 
-	print('Foram encontradas ' + str(linhas_cont) + ' linhas\n')
+	print('\nForam encontradas ' + str(linhas_cont) + ' linhas\n')
 
 	return linhas
 
