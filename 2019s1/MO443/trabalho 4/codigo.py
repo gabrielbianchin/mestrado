@@ -22,6 +22,21 @@ def function_surf(img1, img2):
 
 	return kp1, kp2, des1, des2
 
+def function_brief(img1, img2):
+	#descritor brief e star
+	star = cv2.xfeatures2d.StarDetector_create()
+	brief = cv2.xfeatures2d.BriefDescriptorExtractor_create()
+
+	#keypoints com star
+	kp1 = star.detect(img1, None)
+	kp2 = star.detect(img2, None)
+	
+	#descritores com brief
+	kp1, des1 = brief.compute(img1, kp1)
+	kp2, des2 = brief.compute(img2, kp2)
+
+	return kp1, kp2, des1, des2
+
 def function_orb(img1, img2):
 	#descritor orb
 	orb = cv2.ORB_create()
@@ -62,6 +77,8 @@ if descritor == 'sift':
 	kp1, kp2, des1, des2 = function_sift(img1, img2)
 elif descritor == 'surf':
 	kp1, kp2, des1, des2 = function_surf(img1, img2)
+elif descritor == 'brief':
+	kp1, kp2, des1, des2 = function_brief(img1, img2)
 elif descritor == 'orb':
 	kp1, kp2, des1, des2 = function_orb(img1, img2)
 else:
@@ -74,7 +91,7 @@ if foi_possivel:
 	index_params = dict(algorithm = 1, trees = 5)
 	search_params = dict(checks = 50)
 	flann = cv2.FlannBasedMatcher(index_params, search_params)
-	row_matches = flann.knnMatch(des1,des2,k=2)
+	row_matches = flann.knnMatch(np.asarray(des1,np.float32),np.asarray(des2,np.float32), k=2)
 	
 	matches = []
 	for m,n in row_matches:
