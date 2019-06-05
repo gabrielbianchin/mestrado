@@ -87,6 +87,8 @@ else:
 
 if foi_possivel:
 
+	limiar = int(input('Digite o limiar de correspondencia: '))
+
 	#seleciona os melhores matchings
 	index_params = dict(algorithm = 1, trees = 5)
 	search_params = dict(checks = 50)
@@ -98,19 +100,25 @@ if foi_possivel:
 	    if m.distance < 0.7*n.distance:
 	        matches.append(m)
 
-	pts1 = np.float32([kp1[m.queryIdx].pt for m in matches]).reshape(-1,1,2)
-	pts2 = np.float32([kp2[m.trainIdx].pt for m in matches]).reshape(-1,1,2)
+	if len(matches) > limiar and limiar >= 4:
+		pts1 = np.float32([kp1[m.queryIdx].pt for m in matches]).reshape(-1,1,2)
+		pts2 = np.float32([kp2[m.trainIdx].pt for m in matches]).reshape(-1,1,2)
 
-	#matriz de homografia
-	h, status = cv2.findHomography(pts1, pts2, cv2.RANSAC)
-	
-	#alinhamento das imagens e criacao da imagem panoramica
-	result = cv2.warpPerspective(img1color, h, (img2color.shape[1] + img1color.shape[1],img2color.shape[0]))
-	result[0:img2color.shape[0], 0:img2color.shape[1]] = img2color
+		#matriz de homografia
+		h, status = cv2.findHomography(pts1, pts2, cv2.RANSAC)
+		
+		#alinhamento das imagens e criacao da imagem panoramica
+		result = cv2.warpPerspective(img1color, h, (img2color.shape[1] + img1color.shape[1],img2color.shape[0]))
+		result[0:img2color.shape[0], 0:img2color.shape[1]] = img2color
 
-	#desenho entre os pontos correspondentes
-	img = cv2.drawMatches(img1color, kp1, img2color, kp2, matches[:20], None, flags=2)
+		draw_params = dict(matchColor=(0, 255, 0),flags=2)
 
-	#salva as imagens
-	cv2.imwrite('saida/' + saida + '-panoramica.jpg', result)
-	cv2.imwrite('saida/' + saida + '-retas.jpg', img)
+		#desenho entre os pontos correspondentes
+		img = cv2.drawMatches(img1color, kp1, img2color, kp2, matches[:limiar], None, **draw_params)
+
+		#salva as imagens
+		cv2.imwrite('saida/' + saida + '-panoramica.jpg', result)
+		cv2.imwrite('saida/' + saida + '-retas.jpg', img)
+
+	else:
+		print('Não foi possivel aplicar a funcao de correspondencia')
