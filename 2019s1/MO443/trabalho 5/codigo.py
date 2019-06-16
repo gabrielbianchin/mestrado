@@ -3,7 +3,6 @@ import cv2
 from sklearn.cluster import KMeans
 from sklearn.utils import shuffle
 import sys
-from time import time
 
 #diretorio da imagem
 dir_imagem = sys.argv[1]
@@ -28,8 +27,6 @@ image_array = np.reshape(img, (w * h, d))
 #clusterizacao com kmeans
 if metodo == 'k-means++' or metodo == 'random':
 
-	t0 = time()
-
 	kmeans = KMeans(n_clusters = qtde_cores, init = metodo).fit(image_array)
 
 	#predict os rotulos da imagem
@@ -49,7 +46,6 @@ if metodo == 'k-means++' or metodo == 'random':
 
 	#salvando a imagem
 	cv2.imwrite('saida/' + saida, img_saida)
-	print("done in %0.3fs." % (time() - t0))
 
 else:
 	print('Nao foi possivel aplicar a tecnica')
