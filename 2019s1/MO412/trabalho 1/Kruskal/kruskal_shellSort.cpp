@@ -48,7 +48,48 @@ void unionset(int u, int v){
     link(findset_normal(u), findset_normal(v));
 }
 
+vector<Aresta> counting_sort( const vector<Aresta> &op ){
+   if ( op.empty() )
+      return vector<Aresta> {};
+
+   auto min = *std::min_element( op.begin(), op.end() );
+   auto max = *std::max_element( op.begin(), op.end() );
+
+   vector<float> contagem( max.peso - min.peso + 1, 0 );
+   for ( auto it = op.begin(); it != op.end(); it++ ){
+      cout<<"hh "<<it->peso - min.peso <<endl;
+
+        contagem[it->peso - min.peso]++;
+   }
+
+   partial_sum( contagem.begin(), contagem.end(), contagem.begin() );
+
+   vector<Aresta> ordenado( op.size() );
+   for ( auto it2 = op.rbegin(); it2 != op.rend(); it2++ ){
+      ordenado[contagem[ it2->peso - min.peso ]--] = *it2;
+   }
+
+   return ordenado;
+}
+
+vector<Aresta> shellSort(vector<Aresta> arr, int n){ 
+    // Start with a big gap, then reduce the gap 
+    for (int gap = n/2; gap > 0; gap /= 2){ 
+        for (int i = gap; i < n; i += 1){ 
+            Aresta temp = arr[i]; 
+            
+            int j;             
+            for (j = i; j >= gap && arr[j - gap].peso > temp.peso; j -= gap) 
+                arr[j] = arr[j - gap]; 
+              
+            arr[j] = temp; 
+        } 
+    } 
+    return arr; 
+} 
+
 int main(){
+
     //abrindo o arquivo
     FILE *file;
     file = fopen("testef.txt", "r");
@@ -57,12 +98,15 @@ int main(){
     vector <Aresta> grafo;
     vector <Aresta> A;
 
-    int qt_vertices, qt_arestas;
-    float mst = 0;
+    int qt_vertices, qt_arestas,n;
+    float mst = 0.0;
 
     //leitura da quantidade de vertices e quantidade de arestas
     fscanf(file,"%d %d",&qt_vertices, &qt_arestas);
     
+    //para um grafo não direcionado
+    n = 2*qt_arestas;
+
     //makeset dos vertices
     for(int i=1;i<=qt_vertices;i++){
         makeset(i);
@@ -78,8 +122,7 @@ int main(){
     }
 
     //ordenacao das arestas
-    sort(grafo.begin(),grafo.end());
-    
+    grafo = shellSort(grafo, n);
 
     for(int i=0;i<qt_arestas;i++){
         int a=grafo[i].a,b=grafo[i].b;

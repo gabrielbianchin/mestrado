@@ -48,7 +48,23 @@ void unionset(int u, int v){
     link(findset_normal(u), findset_normal(v));
 }
 
+vector <Aresta> insertionSort(vector <Aresta> arr, int n) {  
+    Aresta key;  
+    int j;
+    for (int i = 1; i < n; i++){  
+        key = arr[i];  
+        j = i - 1;  
+  		while (j >= 0 && arr[j].peso > key.peso){  
+            arr[j + 1] = arr[j];  
+            j = j - 1;  
+        }  
+        arr[j + 1] = key;  
+    }  
+    return arr;
+} 
+
 int main(){
+
     //abrindo o arquivo
     FILE *file;
     file = fopen("testef.txt", "r");
@@ -57,12 +73,15 @@ int main(){
     vector <Aresta> grafo;
     vector <Aresta> A;
 
-    int qt_vertices, qt_arestas;
-    float mst = 0;
+    int qt_vertices, qt_arestas,n;
+    float mst = 0.0;
 
     //leitura da quantidade de vertices e quantidade de arestas
     fscanf(file,"%d %d",&qt_vertices, &qt_arestas);
     
+    //para um grafo não direcionado
+    n = 2*qt_arestas;
+
     //makeset dos vertices
     for(int i=1;i<=qt_vertices;i++){
         makeset(i);
@@ -78,8 +97,7 @@ int main(){
     }
 
     //ordenacao das arestas
-    sort(grafo.begin(),grafo.end());
-    
+    grafo = insertionSort(grafo, n);
 
     for(int i=0;i<qt_arestas;i++){
         int a=grafo[i].a,b=grafo[i].b;

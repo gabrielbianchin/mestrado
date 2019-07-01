@@ -1,0 +1,1 @@
+Trabalhos da Disciplina MO412 - Algoritmos em Grafos. O trio era composto por Gabriel Bianchin, Leodécio Segundo e Vinícius Teixeira.
