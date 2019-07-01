@@ -4,4 +4,5 @@ O grupo era composto por Gabriel Bianchin, Leodécio Segundo e Vinícius Teixeir
 
 ## Trabalho 1 - Árvore Geradora Mínima
 * Kruskal
+	* a 
 * Prim
